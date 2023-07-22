@@ -1,0 +1,191 @@
+﻿
+
+@{
+    ViewBag.Title = "View";
+    Layout = "~/Views/Shared/style.cshtml";
+}
+
+<div class="row">
+    <div class="col-sm-3">
+        <div class="container">
+            @using (Html.BeginForm("save", "Register", FormMethod.Post))
+            {
+                <div class="form-group">
+                    <div>
+                        <label class="form-label">FirstName</label>
+                        <input class="form-control" type="text" name="Firstname" id="Firstname" placeholder="Firstname" />
+                    </div>
+                    <div>
+                        <label class="form-label">LasttName</label>
+                        <input class="form-control" type="text" name="Lastname" id="Lastname" placeholder="Lastname" />
+                    </div>
+                    <div>
+                        <label class="form-label">UserName</label>
+                        <input class="form-control" type="text" name="Usertname" id="Username" placeholder="Username" />
+                    </div>
+                    <div>
+                        <label class="form-label">PhoneNumber</label>
+                        <input class="form-control" type="text" name="Phonenumber" id="Phonenumber" placeholder="Phonenumber" />
+                    </div>
+                    <div>
+                        <label class="form-label">Email</label>
+                        <input class="form-control" type="text" name="Email" id="Email" placeholder="Email" />
+                    </div>
+                    <div>
+                        <label class="form-label">Password</label>
+                        <input class="form-control" type="text" name="Password" id="Password" placeholder="Password" />
+                    </div>
+                    <br />
+                    <div>
+                        <button type="button" id="save" class="btn btn-info" onclick="addProject()">Register</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-sm-8">
+        <div class="panel-body">
+            <table id="tbl-userdetail" class="table table-bordered" cellspacing="0" width="100%" align="center">
+                <thead>
+                    <tr>
+                        
+                        <th>FirstName</th>
+                        <th>LastName</th>
+                        <th>UserName</th>
+                        <th>PhoneNumber</th>
+                        <th>Email</th>
+                        <th>Password</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+    {
+
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        getall();
+
+        var isNew = true;
+
+        function addProject()
+        {
+            var url = '';
+            var data = '';
+            var method;
+
+            if (isNew == true)
+            {
+                url = '/Register/save';
+                data = "{Firstname : '" + $('#Firstname').val() + "',Lastname : '" + $('#Lastname').val() + "',Username : '" + $('#Username').val() + "',Phonenumber : '" + $('#Phonenumber').val() + "',Email : '" + $('#Email').val() + "',Password : '" + $('#Password').val() + "'}";
+                method = 'POST';
+            }
+            else {
+                url = '/Register/save';
+                data = "{Firstname : '" + $('#Firstname').val() + "',Lastname : '" + $('#Lastname').val() + "',Username : '" + $('#Username').val() + "',Phonenumber : '" + $('#Phonenumber').val() + "',Email : '" + $('#Email').val() + "',Password : '" + $('#Password').val() + "',id:'" + ID +"'}";
+                method = 'POST';
+            }
+
+            $.ajax({
+
+                type: method,
+                url: url,
+                dataType: 'JSON',
+                contentType: "application/json; charset=utf-8",
+                data: data,
+
+                success: function (data) {
+                    getall();
+
+                    if (isNew)
+                    {
+                        alert("Registerd Successfully");
+                    }
+                    else {
+                        alert("Updated Successfully");
+                    }
+                }
+            });
+
+        }
+
+        function getall() {
+            $('#tbl-userdetail').dataTable().fnDestroy();
+            $('#tbl-userdetail').DataTable({
+                "ajax": {
+                    "url": '/Register/Getdetails',
+                    "type": "get",
+                    "datatype": "JSON"
+
+                },
+
+                "columns": [
+                    //{ data: "Id" },
+                    { data: "Firstname" },
+                    { data: "Lastname" },
+                    { data: "Username" },
+                    { data: "Phonenumber" },
+                    { data: "Email" },
+                    { data: "Password" },
+                    {
+                        data: "Id", "render": function (data) {
+                            return '<button class="btn btn-success" onclick="get_details(' + data + ')">Edit</button>';
+                        }
+                    },
+                    {
+                        data: "Id", "render": function (data) {
+                            return '<button class="btn btn-danger" onclick="get_delete(' + data + ')">Delete</button>';
+                        }
+                    },
+
+                ]
+            });
+        }
+
+        function get_details(Id)
+        {
+            $.ajax({
+
+                type: 'GET',
+                url: '/Register/Edit?Id='  + Id,
+                dataType: 'JSON',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    isNew = false;
+                    ID = data.Id;
+                    $('#Firstname').val(data.Firtname);
+                    $('#Lastname').val(data.Lastname);
+                    $('#Username').val(data.Username);
+                    $('#Phonenumber').val(data.Phonenumber);
+                    $('#Email').val(data.Email);
+                    $('#Password').val(data.Password);
+                }
+            });
+        }
+        function get_delete(Id)
+        {
+            $.ajax({
+                type: 'GET',
+                url: '/Register/Remove?Id=' + Id,
+                dataType: 'JSON',
+                contentType: "application/json; charset=utf-8",
+
+                success: function(data)
+                {
+                    alert("deleted");
+                    getall();
+
+                }
+            });
+         }
+
+    </script>
+}
